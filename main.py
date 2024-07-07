@@ -25,7 +25,16 @@ def Send():
     image_icon1=PhotoImage(file="send.png")
     win.iconphoto(False,image_icon1)
     Sbackground=PhotoImage(file="sender.png")
-    
+    Label(win,image=Sbackground).place(x=-2,y=0)
+
+    Mbackground=PhotoImage(file="id.png")
+    Label(win,image=Mbackground,bg="#f4fdfe").place(x=0,y=260)
+
+    host=socket.gethostname()
+    Label(win,text=f"ID : {host}",bg='white',fg='black').place(x=160,y=280)
+
+    Button(win,text="+ select file",width=10,height=1,font='arial 14 bold',bg="#fff",fg="#000").place(x=160,y=150)
+    Button(win,text="SEND",width=8,height=1,font='aial 14 bold',bg="#000",fg="#fff").place(x=300,y=150)
 
 
 
