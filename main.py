@@ -70,17 +70,35 @@ def Receive():
     #################icon###############
     image_icon2=PhotoImage(file="receive.png")
     win.iconphoto(False,image_icon2)
-    Hbackground=PhotoImage(file='background.png')
+    Hbackground=PhotoImage(file='receiver.png')
     Label(win,image=Hbackground).place(x=-2,y=0)
 
-    logo=PhotoImage(file='id.png')
+    def receriver():
+        ID=SenderID.get()
+        filename1=incoming_file.get()
+        s=socket.socket()
+        port=8080
+        s.connect((ID,port))
+        file=open(filename1,'wb')
+        file_data=s.recv(1024)
+        file.close()
+        print("File has been received successfully")
+
+    logo=PhotoImage(file='profile.png')
     Label(win,image=logo,bg="#f4fdfe").place(x=10,y=250)
-    Label(win,text="Receive",font=('arial',10,'bold'),bg="#f4fdfe").place(x=20,y=340)
+    Label(win,text="Receive",font=('arial',10,'bold'),bg="#f4fdfe").place(x=100,y=280)
 
     Label(win,text="Input Sender id",font=('arial',10,'bold'),bg="#f4fdfe").place(x=20,y=340)
     SenderID= Entry(win,width=25,fg="black",border=2,bg='white',font=('arial', 15))
     SenderID.place(x=20,y=370)
+    SenderID.focus()
 
+    Label(win,text="Filename for the incoming file:",font=('arial',10,'bold'),bg="#f4fdfe").place(x=20,y=420)
+    incoming_file= Entry(win,width=25,fg="black",border=2,bg='white',font=('arial', 15))
+    incoming_file.place(x=20,y=450)
+    image_icon1=PhotoImage(file="arrow.png")
+    rr=Button(win,text="Receive",compound=LEFT,image=image_icon1,width=130,bg="#39c790",font="arial 14 bold",command=receiver)
+    rr.place(x=20,y=500)
     win.mainloop()
 
 #########################ICON#################
