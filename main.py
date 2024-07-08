@@ -70,7 +70,16 @@ def Receive():
     #################icon###############
     image_icon2=PhotoImage(file="receive.png")
     win.iconphoto(False,image_icon2)
+    Hbackground=PhotoImage(file='background.png')
+    Label(win,image=Hbackground).place(x=-2,y=0)
 
+    logo=PhotoImage(file='id.png')
+    Label(win,image=logo,bg="#f4fdfe").place(x=10,y=250)
+    Label(win,text="Receive",font=('arial',10,'bold'),bg="#f4fdfe").place(x=20,y=340)
+
+    Label(win,text="Input Sender id",font=('arial',10,'bold'),bg="#f4fdfe").place(x=20,y=340)
+    SenderID= Entry(win,width=25,fg="black",border=2,bg='white',font=('arial', 15))
+    SenderID.place(x=20,y=370)
 
     win.mainloop()
 
