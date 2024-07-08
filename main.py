@@ -16,11 +16,32 @@ root.resizable(False,False)
 #########################FUNCTIONS####################
 
 def Send():
+    global filename
     win=Toplevel(root)
     win.title("Send")
     win.geometry("450x560+500+200")
     win.configure(bg="#f4fdfe")
     win.resizable(False,False)
+
+    def select_file():
+        filename=filedialog.askopenfilename(initialdir=os.getcwd(),
+                                            title='Select Image File',
+                                            filetype=(('file_type','*.txt'),('all files','*.*')))
+        
+    
+    def sender():
+        s=socket.socket()
+        host=socket.gethostname()
+        port = 8080
+        s.bind((host,port))
+        s.listen(1)
+        print(host)
+        print("Waiting for any incoming connectoions......")
+        conn,addr=s.accept()
+        file=open(filename,'rb')
+        file_data=file.read(1024)
+        conn.send(file_data)
+        print("Data has been transmitted successfully")
     #################icon###############
     image_icon1=PhotoImage(file="send.png")
     win.iconphoto(False,image_icon1)
@@ -33,8 +54,8 @@ def Send():
     host=socket.gethostname()
     Label(win,text=f"ID : {host}",bg='white',fg='black').place(x=160,y=280)
 
-    Button(win,text="+ select file",width=10,height=1,font='arial 14 bold',bg="#fff",fg="#000").place(x=160,y=150)
-    Button(win,text="SEND",width=8,height=1,font='aial 14 bold',bg="#000",fg="#fff").place(x=300,y=150)
+    Button(win,text="+ select file",width=10,height=1,font='arial 14 bold',bg="#fff",fg="#000",command=select_file).place(x=160,y=150)
+    Button(win,text="SEND",width=8,height=1,font='aial 14 bold',bg="#000",fg="#fff",command=sender).place(x=300,y=150)
 
 
 
