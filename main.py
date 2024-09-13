@@ -38,7 +38,7 @@ def Send():
         s.bind((host,port))
         s.listen(1)
         print(host)
-        print("Waiting for any incoming connectoions......")
+        print("Waiting for any incoming connections......")
         conn,addr=s.accept()
         filename=select_file()
         file=open(filename,'rb')
