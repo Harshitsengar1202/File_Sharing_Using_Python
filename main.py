@@ -27,6 +27,8 @@ def Send():
         filename=filedialog.askopenfilename(initialdir=os.getcwd(),
                                             title='Select Image File',
                                             filetype=(('file_type','*.txt'),('all files','*.*')))
+
+        return filename
         
     
     def sender():
@@ -38,6 +40,7 @@ def Send():
         print(host)
         print("Waiting for any incoming connectoions......")
         conn,addr=s.accept()
+        filename=select_file()
         file=open(filename,'rb')
         file_data=file.read(1024)
         conn.send(file_data)
@@ -73,7 +76,7 @@ def Receive():
     Hbackground=PhotoImage(file='receiver.png')
     Label(win,image=Hbackground).place(x=-2,y=0)
 
-    def receriver():
+    def receiver():
         ID=SenderID.get()
         filename1=incoming_file.get()
         s=socket.socket()
