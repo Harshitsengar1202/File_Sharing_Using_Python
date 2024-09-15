@@ -1,140 +1,130 @@
 from tkinter import *
+from tkinter import ttk
 import socket
-from  tkinter import filedialog
+from tkinter import filedialog
 from tkinter import messagebox
 import os
+import threading
 
+####################### MAIN WINDOW ##########################
 
-#######################MAINWINDOW##########################
-
-root=Tk()
+root = Tk()
 root.title("Shareit")
 root.geometry("450x560+500+200")
 root.configure(bg="#f4fdfe")
-root.resizable(False,False)
+root.resizable(False, False)
 
-#########################FUNCTIONS####################
+# Create a Notebook (tabbed interface)
+notebook = ttk.Notebook(root)
+notebook.pack(fill=BOTH, expand=True)
 
-def Send():
+######################### SEND TAB ####################
+
+send_frame = Frame(notebook, bg="#f4fdfe")
+notebook.add(send_frame, text="Send")
+
+# Initialize filename
+filename = None
+
+selected_file_label = Label(send_frame, text="", bg="#f4fdfe", fg="black", font=('arial', 12))
+selected_file_label.place(x=160, y=120)
+
+def select_file():
     global filename
-    win=Toplevel(root)
-    win.title("Send")
-    win.geometry("450x560+500+200")
-    win.configure(bg="#f4fdfe")
-    win.resizable(False,False)
+    filename = filedialog.askopenfilename(initialdir=os.getcwd(),
+                                          title='Select File',
+                                          filetypes=(('Text Files', '*.txt'), ('All Files', '*.*')))
+    if filename:
+        selected_file_label.config(text=os.path.basename(filename))  # Display the selected file name
 
-    def select_file():
-        filename=filedialog.askopenfilename(initialdir=os.getcwd(),
-                                            title='Select Image File',
-                                            filetype=(('file_type','*.txt'),('all files','*.*')))
-
-        return filename
-        
+def sender():
+    if not filename:
+        messagebox.showerror("Error", "Please select a file to send.")
+        return
     
-    def sender():
-        s=socket.socket()
-        host=socket.gethostname()
+    try:
+        s = socket.socket()
+        host = socket.gethostname()
         port = 8080
-        s.bind((host,port))
+        s.bind((host, port))
         s.listen(1)
         print(host)
-        print("Waiting for any incoming connections......")
-        conn,addr=s.accept()
-        filename=select_file()
-        file=open(filename,'rb')
-        file_data=file.read(1024)
-        conn.send(file_data)
+        print("Waiting for incoming connections...")
+        conn, addr = s.accept()
+        print(f"Connection established with {addr}")
+
+        with open(filename, 'rb') as file:
+            file_data = file.read(1024)
+            while file_data:
+                conn.send(file_data)
+                file_data = file.read(1024)
         print("Data has been transmitted successfully")
-    #################icon###############
-    image_icon1=PhotoImage(file="send.png")
-    win.iconphoto(False,image_icon1)
-    Sbackground=PhotoImage(file="sender.png")
-    Label(win,image=Sbackground).place(x=-2,y=0)
+        messagebox.showinfo("Success", "File sent successfully!")
+    except Exception as e:
+        print(f"Error: {e}")
+        messagebox.showerror("Error", f"Failed to send file: {e}")
+    finally:
+        s.close()
 
-    Mbackground=PhotoImage(file="id.png")
-    Label(win,image=Mbackground,bg="#f4fdfe").place(x=0,y=260)
+# UI Elements for Send Tab
+Button(send_frame, text="+ select file", width=10, height=1, font='arial 14 bold', bg="#fff", fg="#000", command=select_file).place(x=160, y=150)
+Button(send_frame, text="SEND", width=8, height=1, font='arial 14 bold', bg="#000", fg="#fff", command=lambda: threading.Thread(target=sender).start()).place(x=300, y=150)
 
-    host=socket.gethostname()
-    Label(win,text=f"ID : {host}",bg='white',fg='black').place(x=160,y=280)
+# Display Host ID
+host = socket.gethostname()
+Label(send_frame, text=f"ID : {host}", bg='white', fg='black').place(x=160, y=280)
 
-    Button(win,text="+ select file",width=10,height=1,font='arial 14 bold',bg="#fff",fg="#000",command=select_file).place(x=160,y=150)
-    Button(win,text="SEND",width=8,height=1,font='aial 14 bold',bg="#000",fg="#fff",command=sender).place(x=300,y=150)
+######################### RECEIVE TAB ####################
 
+receive_frame = Frame(notebook, bg="#f4fdfe")
+notebook.add(receive_frame, text="Receive")
 
+def receiver():
+    ID = SenderID.get()
+    filename1 = incoming_file.get()
+    if not ID or not filename1:
+        messagebox.showerror("Error", "Please provide Sender ID and filename.")
+        return
 
-    win.mainloop()
-
-def Receive():
-    win=Toplevel(root)
-    win.title("Receive")
-    win.geometry("450x560+500+200")
-    win.configure(bg="#f4fdfe")
-    win.resizable(False,False)
-    #################icon###############
-    image_icon2=PhotoImage(file="receive.png")
-    win.iconphoto(False,image_icon2)
-    Hbackground=PhotoImage(file='receiver.png')
-    Label(win,image=Hbackground).place(x=-2,y=0)
-
-    def receiver():
-        ID=SenderID.get()
-        filename1=incoming_file.get()
-        s=socket.socket()
-        port=8080
-        s.connect((ID,port))
-        file=open(filename1,'wb')
-        file_data=s.recv(1024)
-        file.close()
+    try:
+        s = socket.socket()
+        port = 8080
+        s.connect((ID, port))
+        with open(filename1, 'wb') as file:
+            file_data = s.recv(1024)
+            while file_data:
+                file.write(file_data)
+                file_data = s.recv(1024)
         print("File has been received successfully")
+        messagebox.showinfo("Success", "File received successfully!")
+    except Exception as e:
+        print(f"Error: {e}")
+        messagebox.showerror("Error", f"Failed to receive file: {e}")
+    finally:
+        s.close()
 
-    logo=PhotoImage(file='profile.png')
-    Label(win,image=logo,bg="#f4fdfe").place(x=10,y=250)
-    Label(win,text="Receive",font=('arial',10,'bold'),bg="#f4fdfe").place(x=100,y=280)
+# UI Elements for Receive Tab
+Label(receive_frame, text="Input Sender ID", font=('arial', 10, 'bold'), bg="#f4fdfe").place(x=20, y=40)
+SenderID = Entry(receive_frame, width=25, fg="black", border=2, bg='white', font=('arial', 15))
+SenderID.place(x=20, y=70)
+SenderID.focus()
 
-    Label(win,text="Input Sender id",font=('arial',10,'bold'),bg="#f4fdfe").place(x=20,y=340)
-    SenderID= Entry(win,width=25,fg="black",border=2,bg='white',font=('arial', 15))
-    SenderID.place(x=20,y=370)
-    SenderID.focus()
+Label(receive_frame, text="Filename for the incoming file:", font=('arial', 10, 'bold'), bg="#f4fdfe").place(x=20, y=120)
+incoming_file = Entry(receive_frame, width=25, fg="black", border=2, bg='white', font=('arial', 15))
+incoming_file.place(x=20, y=150)
 
-    Label(win,text="Filename for the incoming file:",font=('arial',10,'bold'),bg="#f4fdfe").place(x=20,y=420)
-    incoming_file= Entry(win,width=25,fg="black",border=2,bg='white',font=('arial', 15))
-    incoming_file.place(x=20,y=450)
-    image_icon1=PhotoImage(file="arrow.png")
-    rr=Button(win,text="Receive",compound=LEFT,image=image_icon1,width=130,bg="#39c790",font="arial 14 bold",command=receiver)
-    rr.place(x=20,y=500)
-    win.mainloop()
+image_icon1 = PhotoImage(file="arrow.png")
+Button(receive_frame, text="Receive", compound=LEFT, image=image_icon1, width=130, bg="#39c790", font="arial 14 bold", command=lambda: threading.Thread(target=receiver).start()).place(x=20, y=200)
 
-#########################ICON#################
+######################### ICON #################
 
-image_icon=PhotoImage(file="icon.png")
-root.iconphoto(False,image_icon)
+image_icon = PhotoImage(file="icon.png")
+root.iconphoto(False, image_icon)
 
+Label(root, text="File Transfer", font=('Acumin Variable Concept', 20, 'bold'), bg="#f4fdfe").place(x=20, y=30)
 
-Label(root,text="File Transfer",font=('Acumin Variable Concept',20,'bold'),bg="#f4fdfe").place(x=20,y=30)
-Frame(root,width=400,height=2,bg="#f3f5f6").place(x=25,y=80)
-
-
-########################SENDBUTTON##################
-
-send_image=PhotoImage(file="Send.png")
-send=Button(root,image=send_image,bg="#f4fdfe",bd=0,command=Send)
-send.place(x=50,y=100)
-Label(root,text="Send",font=('Acumin Variable Concept',17,'bold'),bg="#f4fdfe").place(x=67,y=200)
-
-########################RECEIVEBUTTON##################
-
-receive_image=PhotoImage(file="receive.png")
-receive=Button(root,image=receive_image,bg="#f4fdfe",bd=0,command=Receive)
-receive.place(x=300,y=100)
-Label(root,text="Receive",font=('Acumin Variable Concept',17,'bold'),bg="#f4fdfe").place(x=308,y=200)
-
-########################BACKGROUND#######################
-background=PhotoImage(file="background.png")
-Label(root,image=background).place(x=-2,y=323)
-
-
-
-
-
+######################## BACKGROUND #######################
+background = PhotoImage(file="background.png")
+Label(root, image=background).place(x=-2, y=323)
 
 root.mainloop()
