@@ -9,7 +9,7 @@ import threading
 ####################### MAIN WINDOW ##########################
 
 root = Tk()
-root.title("Shareit")
+root.title("File-Transfer")
 root.geometry("450x560+500+200")
 root.configure(bg="#f4fdfe")
 root.resizable(False, False)
